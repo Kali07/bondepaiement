@@ -11,30 +11,26 @@ if (!token) {
   window.location.href = "etudiantlogin.html";
 }
 
-// Récupération des infos de l'étudiant connecté
+// Récupération des infos étudiant
 fetch('/api/etudiants/me', {
   headers: { Authorization: `Bearer ${token}` }
 })
   .then(res => res.json())
   .then(data => {
-    console.log("Données récupérées :", data);
     document.getElementById("nom").textContent = data.nom;
     document.getElementById("prenom").textContent = data.prenom;
     document.getElementById("matricule").textContent = data.matricule;
     document.getElementById("promotion").textContent = data.promotion;
-
-    // Stocker les infos utiles pour l'envoi futur
     window.userInfos = data;
   })
-  .catch(err => {
-    console.error("Erreur récupération infos :", err);
+  .catch(() => {
     alert("Session expirée.");
     localStorage.removeItem("token");
     window.location.href = "etudiantlogin.html";
   });
 
 // Génération des bons
-document.getElementById("bonsForm").addEventListener("submit", function (e) {
+document.getElementById("bonsForm").addEventListener("submit", (e) => {
   e.preventDefault();
   const bonsCoches = [...document.querySelectorAll('input[name="bon"]:checked')];
   const container = document.getElementById("listeBons");
@@ -53,8 +49,6 @@ document.getElementById("bonsForm").addEventListener("submit", function (e) {
     const numeroCompte = "00011-55101-12345678900-55";
     const agence = "55101-Kinshasa UPC";
 
-  
-    // Génération du bon côté visuel
     const bonHTML = document.createElement("div");
     bonHTML.className = "bon";
     bonHTML.innerHTML = `
@@ -68,13 +62,10 @@ document.getElementById("bonsForm").addEventListener("submit", function (e) {
       <p><strong>Banque:</strong> ${banque}</p>
       <p><strong>N° Compte:</strong> ${numeroCompte}</p>
       <p><strong>Agence:</strong> ${agence}</p>
-      <canvas class="qr-code" id="qr-${ref}"></canvas>
+      <canvas id="qr-${ref}"></canvas>
       <button class="export-btn" onclick="exporterPDF(this)">Exporter en PDF</button>
     `;
     container.appendChild(bonHTML);
-
-console.log("Motif :", motif);
-console.log("Montant :", montant);
 
     const qrText = `
 Nom: ${window.userInfos.nom}
@@ -86,72 +77,53 @@ Réf: ${ref}
 Banque: ${banque}
 Compte: ${numeroCompte}
 Agence: ${agence}
-    `.trim();
+`.trim();
 
-// Génération du QR Code
-QRCode.toCanvas(
-  document.getElementById(`qr-${ref}`),
-  qrText,
-  function (error) {
-    if (error) console.error("QR Code error:", error);
-  }
-);
-    // Appel API pour enregistrer le bon en BDD
-fetch('/api/bons', {
-  method: 'POST',
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`
-  },
-  body: JSON.stringify({ motif, montant, reference: ref })
-})
-      .then(res => res.json())
-      .then(rep => {
-        console.log(rep);
-      })
-      .catch(err => console.error("Erreur création du bon :", err));
+    QRCode.toCanvas(document.getElementById(`qr-${ref}`), qrText, (error) => {
+      if (error) console.error("QR Code error:", error);
+    });
+
+    fetch('/api/bons', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ motif, montant, reference: ref })
+    })
+    .then(res => res.json())
+    .then(rep => console.log(rep))
+    .catch(err => console.error("Erreur création du bon :", err));
   });
 });
 
-// Génération référence unique
 function genererReference() {
   const segment = () => Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `${segment()}-${segment()}-${segment()}-${segment()}`;
+  return `${segment()}-${segment()}-${segment()}`;
 }
 
-// Export PDF 
+// Export PDF
 function exporterPDF(button) {
   const bon = button.parentElement;
-
-  const nom = bon.querySelector('p:nth-child(1)').textContent;
-  const prenom = bon.querySelector('p:nth-child(2)').textContent;
-  const matricule = bon.querySelector('p:nth-child(3)').textContent;
-  const promotion = bon.querySelector('p:nth-child(4)').textContent;
-  const motif = bon.querySelector('p:nth-child(5)').textContent;
-  const montant = bon.querySelector('p:nth-child(6)').textContent;
-  const reference = bon.querySelector('p:nth-child(7)').textContent;
-  const banque = bon.querySelector('p:nth-child(8)').textContent;
-  const compte = bon.querySelector('p:nth-child(9)').textContent;
-  const agence = bon.querySelector('p:nth-child(10)').textContent;
-  const qrCanvas = bon.querySelector('.qr-code canvas');
+  const infos = [...bon.querySelectorAll("p")].map(p => p.textContent.split(":")[1]?.trim());
+  const [nom, prenom, matricule, promotion, motif, montant, reference, banque, compte, agence] = infos;
+  const qrCanvas = bon.querySelector("canvas");
 
   const doc = new window.jspdf.jsPDF();
-
   doc.setFontSize(14);
   doc.text("Université Protestante au Congo", 20, 20);
   doc.setFontSize(12);
-  doc.text(nom, 20, 35);
-  doc.text(prenom, 20, 42);
-  doc.text(matricule, 20, 49);
-  doc.text(promotion, 20, 56);
-  doc.text(motif, 20, 63);
-  doc.text(montant, 20, 70);
-  doc.text(reference, 20, 77);
-  doc.text(banque, 20, 84);
-  doc.text(compte, 20, 91);
-  doc.text(agence, 20, 98);
+  doc.text(`Nom: ${nom}`, 20, 35);
+  doc.text(`Prénom: ${prenom}`, 20, 42);
+  doc.text(`Matricule: ${matricule}`, 20, 49);
+  doc.text(`Promotion: ${promotion}`, 20, 56);
+  doc.text(`Motif: ${motif}`, 20, 63);
+  doc.text(`Montant: ${montant}`, 20, 70);
+  doc.text(`Référence: ${reference}`, 20, 77);
+  doc.text(`Banque: ${banque}`, 20, 84);
+  doc.text(`N° Compte: ${compte}`, 20, 91);
+  doc.text(`Agence: ${agence}`, 20, 98);
 
-  // Ajout du QR Code s'il existe
   if (qrCanvas) {
     const qrDataUrl = qrCanvas.toDataURL();
     doc.addImage(qrDataUrl, 'PNG', 20, 110, 50, 50);
@@ -160,13 +132,10 @@ function exporterPDF(button) {
   doc.save(`bon-${Date.now()}.pdf`);
 }
 
+// Voir anciens bons
 document.getElementById('voirMesBons').addEventListener('click', () => {
-  const token = localStorage.getItem('token');
-
   fetch('/api/bons', {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
+    headers: { Authorization: `Bearer ${token}` }
   })
   .then(res => res.json())
   .then(bons => {
@@ -174,27 +143,41 @@ document.getElementById('voirMesBons').addEventListener('click', () => {
     container.innerHTML = '';
 
     if (bons.length === 0) {
-      container.innerHTML = '<p>Aucun bon généré pour l\'instant.</p>';
-    } else {
-      bons.forEach(bon => {
-        container.innerHTML += `
-          <div class="bon">
-            <p><strong>Motif:</strong> ${bon.description}</p>
-            <p><strong>Montant:</strong> ${bon.montant} $</p>
-            <p><strong>Référence:</strong> ${bon.reference}</p>
-            <p><strong>Statut:</strong> ${bon.statut}</p>
-            <hr/>
-          </div>
-        `;
-      });
+      container.innerHTML = '<p>Aucun bon généré.</p>';
+      return;
     }
-    
+
+    bons.forEach(bon => {
+      const bloc = document.createElement("div");
+      bloc.className = "bon";
+      bloc.innerHTML = `
+        <p><strong>Motif:</strong> ${bon.description}</p>
+        <p><strong>Montant:</strong> ${bon.montant} $</p>
+        <p><strong>Référence:</strong> ${bon.reference}</p>
+        <p><strong>Statut:</strong> ${bon.statut}</p>
+        <canvas id="qr-${bon.reference}"></canvas>
+        <button class="export-btn" onclick="exporterPDF(this)">Exporter en PDF</button>
+      `;
+      container.appendChild(bloc);
+
+      const qrText = `
+Nom: ${window.userInfos.nom}
+Prénom: ${window.userInfos.prenom}
+Matricule: ${window.userInfos.matricule}
+Motif: ${bon.description}
+Montant: ${bon.montant}$
+Réf: ${bon.reference}
+Banque: Rawbank UPC
+Compte: 00011-55101-12345678900-55
+Agence: 55101-Kinshasa UPC
+`.trim();
+
+      QRCode.toCanvas(document.getElementById(`qr-${bon.reference}`), qrText, (error) => {
+        if (error) console.error("QR Code error:", error);
+      });
+    });
+
     document.getElementById('mesBonsSection').style.display = 'block';
   })
-  .catch(err => {
-    console.error('Erreur récupération bons:', err);
-    alert('Impossible de récupérer vos bons');
-  });
+  .catch(() => alert("Impossible de récupérer vos bons"));
 });
-
-
