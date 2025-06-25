@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Authentification - UPC</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h1>Université Protestante du Congo</h1>
+    <p class="subtext">Faculté des Sciences Informatiques</p>
+    <form id ="registerForm">
+      <h2>Authentification</h2>
+      <label for="matricule">Matricule</label>
+      <input type="text" id="matricule" name="matricule" placeholder="Entrez votre matricule" required>
+      <label for="mot_de_passe_temporaire">Mot de passe temporaire</label>
+      <input type="password" id="mot_de_passe_temporaire" name="mot_de_passe_temporaire" placeholder=" Entrez votre mot de passe temporaire" required>
+      <button type="submit">Connexion</button>
+    </form>
+    <p>Vous avez déjà un compte ?</p>
+    <p>Connectez vous <a href="etudiantlogin.html">ici</a>.</p>
+
+  </div>
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const matricule = document.getElementById('matricule').value;
+      const mot_de_passe_temporaire = document.getElementById('mot_de_passe_temporaire').value;
+      try {
+        const response = await fetch('/api/registreur/verifier', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ matricule, mot_de_passe_temporaire }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          // Redirige vers new-password.html avec le matricule en paramètre
+          window.location.href = `new-password.html?matricule=${encodeURIComponent(matricule)}`;
+        } else {
+          alert(data.error || 'Erreur de connexion.');
+        }
+      } catch (error) {
+        alert('Erreur réseau ou serveur.');
+      }
+    });
+  </script>
+</body>
+</html>
+   

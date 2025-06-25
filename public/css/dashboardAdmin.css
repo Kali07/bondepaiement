@@ -1,0 +1,26 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #121212;
+  color: #f8f9fa;
+}
+.sidebar {
+  min-height: 100vh;
+  background-color: #1f1f1f;
+}
+.sidebar a {
+  color: #e7bc4f;
+  text-decoration: none;
+}
+.sidebar a:hover {
+  background-color: #343a40;
+  color: #fff;
+}
+.navbar-brand {
+  font-weight: bold;
+  color: #fbfbf9;
+}
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}

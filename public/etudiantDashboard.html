@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Étudiant</title>
+  <link rel="stylesheet" href="css/dashboardEtudiant.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Université Protestante au Congo</h1>
+    <h2>Année académique 2024-2025</h2>
+  </header>
+
+  <section class="etudiant-infos">
+    <h3>Informations de l'étudiant</h3>
+    <p><strong>Nom :</strong> <span id="nom"></span></p>
+    <p><strong>Prénom :</strong> <span id="prenom"></span></p>
+    <p><strong>Matricule :</strong> <span id="matricule"></span></p>
+    <p><strong>Promotion :</strong> <span id="promotion"></span></p>
+  </section>
+  <button id ="logoutBtn">Se déconnecter</button>
+
+  <section class="bons-section">
+    <h3>Choisissez les bons à générer</h3>
+    <form id="bonsForm">
+      <label><input type="checkbox" name="bon" value="Frais académiques"> Frais académiques – 925$</label>
+      <label><input type="checkbox" name="bon" value="Frais CISNET"> Frais CISNET – 20$</label>
+      <label><input type="checkbox" name="bon" value="Attestations de fréquentation"> Attestations de fréquentation – 10$</label>
+      <button type="submit">Générer les bons</button>
+    </form>
+  </section>
+
+  <section id="bonsGeneres">
+    <h3>Bons générés</h3>
+    <div id="listeBons"></div>
+  </section>
+
+  <script src="dashboardEtudiant.js"></script>
+</body>
+</html>

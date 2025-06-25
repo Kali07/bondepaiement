@@ -1,0 +1,98 @@
+/* Police globale */
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #121212;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+/* Conteneur global */
+.container {
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+/* Titre principal */
+h1 {
+  font-size: 24px;
+  color: #f1c40f; /* Jaune */
+  margin-bottom: 5px;
+}
+
+.subtext {
+  font-size: 16px;
+  color: #ccc;
+  margin-bottom: 30px;
+}
+
+/* Formulaire */
+.login-container {
+  background-color: #1e1e1e;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.2);
+  text-align: left;
+}
+
+.login-container h2 {
+  color: #f1c40f;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-container label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: 600;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #444;
+  border-radius: 5px;
+  background-color: #2a2a2a;
+  color: #fff;
+}
+
+.login-container input::placeholder {
+  color: #aaa;
+}
+
+/* Bouton */
+.login-container button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 20px;
+  background-color: #f1c40f;
+  color: #000;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.login-container button:hover {
+  background-color: #d4ac0d;
+}
+
+/* Message d’erreur */
+#message {
+  color: red;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Lien d’activation */
+.login-container a {
+  color: #f1c40f;
+  text-decoration: none;
+}
+
+.login-container a:hover {
+  text-decoration: underline;
+}

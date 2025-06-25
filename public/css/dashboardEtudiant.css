@@ -1,0 +1,101 @@
+/* === Thème sombre général === */
+body {
+  background-color: #121212;
+  color: #e8d313;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* === Conteneur principal === */
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+}
+
+/* === Section informations étudiant === */
+.etudiant-infos {
+  background-color: #1e1e1e;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+}
+.etudiant-infos div {
+  flex: 1 1 200px;
+  margin-right: 10px;
+}
+
+/* === Section des bons à générer === */
+.bons-section {
+  background-color: #1e1e1e;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+.bons-section label {
+  display: block;
+  margin-bottom: 10px;
+}
+.bons-section input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+/* === Bouton principal === */
+button {
+  background-color: #f1c40f;
+  color: #000;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+button:hover {
+  background-color: #d4ac0d;
+}
+
+/* === Liste des bons générés === */
+.bons-generes {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.bon-item {
+  background-color: #1a1a1a;
+  padding: 15px;
+  border-radius: 6px;
+  border-left: 4px solid #f1c40f;
+}
+.bon-item p {
+  margin: 4px 0;
+}
+.bon-item canvas {
+  margin-top: 10px;
+  max-width: 150px;
+}
+
+/* === Responsive design === */
+@media screen and (max-width: 768px) {
+  .etudiant-infos {
+    flex-direction: column;
+  }
+
+  .bons-section {
+    padding: 15px;
+  }
+
+  button {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .bon-item canvas {
+    max-width: 100px;
+  }
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Connexion Étudiant</title>
+  <link rel="stylesheet" href="css/style-etudiantlogin.css" />
+</head>
+<body>
+  <div class="login-container">
+    <h1>Université Protestante du Congo</h1>
+    <p class="subtext">Faculté des Sciences Informatiques</p>
+
+    <h2>Connexion Étudiant</h2>
+    
+    <form id="loginForm">
+      <label for="matricule">Matricule</label>
+      <input type="text" id="matricule" name="matricule" placeholder="Entrez votre matricule" required />
+
+      <label for="motDePasse">Mot de passe</label>
+      <input type="password" id="motDePasse" name="motDePasse" placeholder="Entrez votre mot de passe" required />
+
+      <button type="submit">Connexion</button>
+    </form>
+
+    <p>C'est la première fois que vous visitez notre site ?</p>
+    <p>Activez votre compte <a href="register.html">ici</a>.</p>
+
+    <div id="message" style="color: red; margin-top: 10px;"></div>
+  </div>
+  <script src="js/etudiantlogin.js></script>
+</body>
+</html>
