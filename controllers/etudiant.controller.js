@@ -55,22 +55,22 @@ exports.getInfosEtudiant = async (req, res) => {
   if (!token) return res.status(401).json({ message: "Token manquant" });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'vraimentsecret');
+  const id = req.user.id;  // récupéré directement depuis le middleware
 
-    const [rows] = await db.execute(`
-      SELECT u.id, u.nom, u.prenom, u.matricule, u.email,
-             p.nom AS promotions
-      FROM users u
-      LEFT JOIN promotions p ON u.id_promotions = p.id
-      WHERE u.id = ?
-    `, [decoded.id]);
+  const [rows] = await db.execute(`
+    SELECT u.id, u.nom, u.prenom, u.matricule, u.email,
+           p.nom AS promotion
+    FROM users u
+    LEFT JOIN promotions p ON u.id_promotions = p.id
+    WHERE u.id = ?
+  `, [id]);
 
-    if (rows.length === 0) return res.status(404).json({ message: "Utilisateur introuvable" });
+  if (rows.length === 0) return res.status(404).json({ message: "Utilisateur introuvable" });
 
-    res.json(rows[0]);
+  res.json(rows[0]);
 
-  } catch (err) {
-    console.error("Erreur récupération étudiant :", err);
-    res.status(403).json({ message: "Token invalide ou expiré" });
-  }
+} catch (err) {
+  console.error("Erreur récupération étudiant :", err);
+  res.status(500).json({ message: "Erreur serveur" });
+}
 };

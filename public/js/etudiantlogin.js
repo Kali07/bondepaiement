@@ -1,29 +1,31 @@
-document.getElementById('loginForm').addEventListener('submit', async function (e) {
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const matricule = document.getElementById('matricule').value.trim();
-  const motDePasse = document.getElementById('motDePasse').value.trim();
-  const messageDiv = document.getElementById('message');
+
+  const matricule = document.getElementById("matricule").value;
+  const motDePasse = document.getElementById("motDePasse").value;
+
   try {
-    const response = await fetch('http://localhost:3000/api/etudiants/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+    const res = await fetch('/api/etudiants/login', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ matricule, motDePasse })
     });
-    const data = await response.json();
-    if (response.ok) {
-      // Stocker le token si tu utilises un token
-      localStorage.setItem('token', data.token); 
-      console.log("Reponse API:",data);
-      localStorage.setItem('etudiantNom', data.nom); // si tu veux afficher son nom plus tard
-      // Rediriger vers l’interface de l’étudiant
-      window.location.href = 'etudiantDashboard.html';
-    } else {
-      messageDiv.textContent = data.message || 'Identifiants incorrects';
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      document.getElementById("message").textContent = data.message || "Erreur inconnue";
+      return;
     }
-  } catch (error) {
-    console.error('Erreur de connexion:', error);
-    messageDiv.textContent = 'Erreur serveur. Veuillez réessayer.';
+
+    // Stocker le token dans le localStorage
+    localStorage.setItem("token", data.token);
+
+    // Redirection vers le dashboard
+    window.location.href = "etudiantDashboard.html";
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById("message").textContent = "Erreur serveur";
   }
 });

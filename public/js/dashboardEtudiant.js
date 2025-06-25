@@ -4,35 +4,58 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
   window.location.href = "etudiantlogin.html";
 });
 
-// Token check
+// Vérification du token
 const token = localStorage.getItem("token");
 if (!token) {
   alert("Veuillez vous connecter.");
   window.location.href = "etudiantlogin.html";
 }
 
-// Récupération des infos de l’étudiant connecté
+// Chargement des infos étudiant
 fetch('/api/etudiants/me', {
   headers: { Authorization: `Bearer ${token}` }
 })
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById("nom").textContent = data.nom;
-    document.getElementById("prenom").textContent = data.prenom;
-    document.getElementById("matricule").textContent = data.matricule;
-    document.getElementById("promotion").textContent = data.promotion;
-  })
-  .catch(err => {
-    console.error("Erreur récupération infos :", err);
-    alert("Session expirée.");
+.then(res => res.json())
+.then(data => {
+  console.log("Données récupérées :", data);
+  if (data.message) {
+    alert("Session expirée ou invalide.");
     localStorage.removeItem("token");
     window.location.href = "etudiantlogin.html";
-  });
+    return;
+  }
+
+  afficherInfosEtudiant(data);
+})
+.catch(err => {
+  console.error("Erreur récupération infos :", err);
+  alert("Impossible de récupérer les informations.");
+  window.location.href = "etudiantlogin.html";
+});
+
+// Affiche les informations de l'étudiant
+function afficherInfosEtudiant(data) {
+  document.getElementById("nom").textContent = data.nom || "";
+  document.getElementById("prenom").textContent = data.prenom || "";
+  document.getElementById("matricule").textContent = data.matricule || "";
+  document.getElementById("promotion").textContent = data.promotions || "";
+}
 
 // Génération des bons
 document.getElementById("bonsForm").addEventListener("submit", function (e) {
   e.preventDefault();
+
   const bonsCoches = [...document.querySelectorAll('input[name="bon"]:checked')];
+  if (bonsCoches.length === 0) {
+    alert("Veuillez sélectionner au moins un bon.");
+    return;
+  }
+
+  const nom = document.getElementById("nom").textContent;
+  const prenom = document.getElementById("prenom").textContent;
+  const matricule = document.getElementById("matricule").textContent;
+  const promotion = document.getElementById("promotion").textContent;
+
   const container = document.getElementById("listeBons");
   container.innerHTML = "";
 
@@ -42,7 +65,7 @@ document.getElementById("bonsForm").addEventListener("submit", function (e) {
       "Frais académiques": 925,
       "Frais CISNET": 20,
       "Attestations de fréquentation": 10
-    }[motif];
+    }[motif] || 0;
 
     const ref = genererReference();
     const banque = "Rawbank UPC";
@@ -52,10 +75,10 @@ document.getElementById("bonsForm").addEventListener("submit", function (e) {
     const bonHTML = document.createElement("div");
     bonHTML.className = "bon";
     bonHTML.innerHTML = `
-      <p><strong>Nom:</strong> ${document.getElementById("nom").textContent}</p>
-      <p><strong>Prénom:</strong> ${document.getElementById("prenom").textContent}</p>
-      <p><strong>Matricule:</strong> ${document.getElementById("matricule").textContent}</p>
-      <p><strong>Promotion:</strong> ${document.getElementById("promotion").textContent}</p>
+      <p><strong>Nom:</strong> ${nom}</p>
+      <p><strong>Prénom:</strong> ${prenom}</p>
+      <p><strong>Matricule:</strong> ${matricule}</p>
+      <p><strong>Promotion:</strong> ${promotion}</p>
       <p><strong>Motif:</strong> ${motif}</p>
       <p><strong>Montant:</strong> ${montant} $</p>
       <p><strong>Référence:</strong> ${ref}</p>
@@ -68,31 +91,31 @@ document.getElementById("bonsForm").addEventListener("submit", function (e) {
 
     container.appendChild(bonHTML);
 
-    const qrText = `
-Nom: ${document.getElementById("nom").textContent}
-Prénom: ${document.getElementById("prenom").textContent}
-Matricule: ${document.getElementById("matricule").textContent}
-Motif: ${motif}
-Montant: ${montant}$
-Réf: ${ref}
-Banque: ${banque}
-Compte: ${numeroCompte}
-Agence: ${agence}
-    `.trim();
+            const qrText = `
+        Nom: ${nom}
+        Prénom: ${prenom}
+        Matricule: ${matricule}
+        Motif: ${motif}
+        Montant: ${montant}$
+        Réf: ${ref}
+        Banque: ${banque}
+        Compte: ${numeroCompte}
+        Agence: ${agence}
+            `.trim();
 
     QRCode.toCanvas(document.getElementById(`qr-${ref}`), qrText, function (error) {
-      if (error) console.error("QR Code error:", error);
+      if (error) console.error("Erreur QR Code :", error);
     });
   });
 });
 
-// Génère une référence de type XXD-A71-C2E-02
+// Génère une référence unique de type XXD-A71-C2E-02
 function genererReference() {
   const segment = () => Math.random().toString(36).substring(2, 6).toUpperCase();
   return `${segment()}-${segment()}-${segment()}-${segment()}`;
 }
 
-// Export en PDF (exclut le bouton)
+// Export du bon en PDF
 function exporterPDF(button) {
   const bon = button.parentElement.cloneNode(true);
   bon.querySelector('.export-btn').remove();
