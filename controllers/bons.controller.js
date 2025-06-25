@@ -58,17 +58,31 @@ const creerBon = async (req, res) => {
   try {
     // Récupérer l'id du type de bon à partir du motif
     const [types] = await db.query('SELECT id FROM bons_types WHERE nom = ?', [motif]);
-    
+
     if (types.length === 0) {
       return res.status(400).json({ message: "Type de bon invalide" });
     }
 
     const type_id = types[0].id;
 
+    // Génération du contenu QR (même contenu que côté front)
+    const qrText = `
+Nom: ${req.user.nom}
+Prénom: ${req.user.prenom}
+Matricule: ${req.user.matricule}
+Motif: ${motif}
+Montant: ${montant}$
+Réf: ${reference}
+Banque: Rawbank UPC
+Compte: 00011-55101-12345678900-55
+Agence: 55101-Kinshasa UPC
+    `.trim();
+
+    // Insertion avec le champ code_qr
     await db.query(`
       INSERT INTO bons_paiement 
-      (user_id, type_id, montant, description, reference, statut, nom_etudiant, prenom_etudiant, matricule_etudiant, promotion_etudiant)
-      VALUES (?, ?, ?, ?, ?, 'en attente', ?, ?, ?, ?)
+      (user_id, type_id, montant, description, reference, statut, nom_etudiant, prenom_etudiant, matricule_etudiant, promotion_etudiant, code_qr)
+      VALUES (?, ?, ?, ?, ?, 'en attente', ?, ?, ?, ?, ?)
     `, [
       userId,
       type_id,
@@ -78,7 +92,8 @@ const creerBon = async (req, res) => {
       req.user.nom,
       req.user.prenom,
       req.user.matricule,
-      req.user.promotion || "NC"
+      req.user.promotion || "NC",
+      qrText
     ]);
 
     res.status(201).json({ message: "Bon enregistré avec succès" });

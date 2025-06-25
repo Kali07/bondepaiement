@@ -21,7 +21,7 @@ fetch('/api/etudiants/me', {
     document.getElementById("nom").textContent = data.nom;
     document.getElementById("prenom").textContent = data.prenom;
     document.getElementById("matricule").textContent = data.matricule;
-    document.getElementById("promotion").textContent = data.promotions;
+    document.getElementById("promotion").textContent = data.promotion;
 
     // Stocker les infos utiles pour l'envoi futur
     window.userInfos = data;
