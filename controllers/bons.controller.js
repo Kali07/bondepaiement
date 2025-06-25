@@ -83,3 +83,44 @@ module.exports = {
   getFilteredBons,
   creerBon
 };
+
+// ============================
+// CRUD : ADMIN
+// ============================
+
+
+// exports.getAll = (req, res) => {
+//   db.query('SELECT * FROM bons_types', (err, results) => {
+//     if (err) return res.status(500).json({ message: 'Erreur serveur' });
+//     res.json(results);
+//   });
+// };
+
+// exports.create = (req, res) => {
+//   const { nom } = req.body;
+//   if (!nom) return res.status(400).json({ message: 'Nom requis' });
+  
+//   db.query('INSERT INTO bons_types (nom) VALUES (?)', [nom], (err) => {
+//     if (err) return res.status(500).json({ message: 'Erreur serveur' });
+//     res.json({ message: 'Type de bon ajouté' });
+//   });
+// };
+
+// exports.delete = (req, res) => {
+//   const { id } = req.params;
+//   db.query('DELETE FROM bons_types WHERE id = ?', [id], (err) => {
+//     if (err) return res.status(500).json({ message: 'Erreur serveur' });
+//     res.json({ message: 'Type supprimé' });
+//   });
+// };
+
+// exports.update = (req, res) => {
+//   const { id } = req.params;
+//   const { nom } = req.body;
+//   if (!nom) return res.status(400).json({ message: 'Nom requis' });
+
+//   db.query('UPDATE bons_types SET nom = ? WHERE id = ?', [nom, id], (err) => {
+//     if (err) return res.status(500).json({ message: 'Erreur serveur' });
+//     res.json({ message: 'Type modifié' });
+//   });
+// };

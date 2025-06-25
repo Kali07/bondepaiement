@@ -5,10 +5,19 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "admin-login.html";
     return;
   }
-  console.log("[ADMIN] Token détecté :", token);
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1])); 
+    if (payload.nom) {
+      document.getElementById("nom-admin").textContent = payload.nom;
+    }
+  } catch (err) {
+    console.error("Erreur décodage token :", err);
+    localStorage.removeItem("adminToken");
+    window.location.href = "admin-login.html";
+  }
 
   afficherSection("types-bons");
-
   chargerTypesBons();
   chargerTypesPourFiltre();
   chargerListeBons();
@@ -18,44 +27,45 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "admin-login.html";
   });
 
-  document.getElementById("add-bon-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const nom = document.getElementById("nom-bon").value.trim();
-    if (nom.length < 3) return alert("Le nom doit contenir au moins 3 caractères.");
-    try {
-      const res = await fetch("/api/bons-types", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ nom })
-      });
-      if (!res.ok) throw new Error("Erreur lors de l’ajout.");
-      document.getElementById("nom-bon").value = "";
-      chargerTypesBons();
-      chargerTypesPourFiltre();
-    } catch (err) {
-      alert("Erreur : " + err.message);
-    }
-  });
-
+  document.getElementById("add-bon-form").addEventListener("submit", ajouterTypeBon);
   document.getElementById("applyFilters").addEventListener("click", chargerListeBons);
-
 });
 
-// Changement de section
+// Gestion des sections
 function afficherSection(sectionId) {
   document.querySelectorAll("section").forEach(section => {
     section.style.display = "none";
   });
   const activeSection = document.getElementById(sectionId);
-  if (activeSection) {
-    activeSection.style.display = "block";
+  if (activeSection) activeSection.style.display = "block";
+}
+
+// Ajout type de bon
+async function ajouterTypeBon(e) {
+  e.preventDefault();
+  const nom = document.getElementById("nom-bon").value.trim();
+  if (nom.length < 3) return alert("Le nom doit contenir au moins 3 caractères.");
+
+  try {
+    const token = localStorage.getItem("adminToken");
+    const res = await fetch("/api/bons-types", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ nom })
+    });
+    if (!res.ok) throw new Error("Erreur lors de l’ajout.");
+    document.getElementById("nom-bon").value = "";
+    chargerTypesBons();
+    chargerTypesPourFiltre();
+  } catch (err) {
+    alert("Erreur : " + err.message);
   }
 }
 
-// Charger types de bons tableau
+// Charger liste des types de bons
 async function chargerTypesBons() {
   const token = localStorage.getItem("adminToken");
   try {
@@ -79,11 +89,11 @@ async function chargerTypesBons() {
       tbody.appendChild(row);
     });
   } catch (err) {
-    console.error("Erreur de chargement :", err);
+    console.error("Erreur chargement types :", err);
   }
 }
 
-// Charger types de bons dans le filtre
+// Charger types dans le filtre
 async function chargerTypesPourFiltre() {
   const token = localStorage.getItem("adminToken");
   try {
@@ -101,20 +111,22 @@ async function chargerTypesPourFiltre() {
       select.appendChild(opt);
     });
   } catch (err) {
-    console.error("Erreur chargement filtres :", err);
+    console.error("Erreur filtres :", err);
   }
 }
 
-// Modifier un type de bon
+// Éditer type de bon
 function editerType(id, bouton) {
   const ligne = bouton.closest("tr");
   const nomCell = ligne.querySelector(".type-nom");
   const ancienNom = nomCell.textContent;
+
   const input = document.createElement("input");
   input.type = "text";
   input.value = ancienNom;
   input.className = "form-control form-control-sm";
   nomCell.replaceWith(input);
+
   bouton.innerHTML = '<i class="bi bi-check-lg"></i>';
 
   bouton.onclick = async () => {
@@ -130,7 +142,7 @@ function editerType(id, bouton) {
         },
         body: JSON.stringify({ nom: nouveauNom })
       });
-      if (!res.ok) throw new Error("Erreur lors de la modification.");
+      if (!res.ok) throw new Error("Erreur modification.");
       chargerTypesBons();
       chargerTypesPourFiltre();
     } catch (err) {
@@ -139,16 +151,16 @@ function editerType(id, bouton) {
   };
 }
 
-// Supprimer un type de bon
+// Supprimer type de bon
 async function supprimerType(id) {
-  if (!confirm("Voulez-vous vraiment supprimer ce type de bon ?")) return;
+  if (!confirm("Confirmer suppression ?")) return;
   try {
     const token = localStorage.getItem("adminToken");
     const res = await fetch(`/api/bons-types/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` }
     });
-    if (!res.ok) throw new Error("Erreur lors de la suppression.");
+    if (!res.ok) throw new Error("Erreur suppression.");
     chargerTypesBons();
     chargerTypesPourFiltre();
   } catch (err) {
@@ -156,7 +168,7 @@ async function supprimerType(id) {
   }
 }
 
-// Charger liste des bons avec filtres
+// Liste des bons avec filtres
 async function chargerListeBons() {
   const token = localStorage.getItem("adminToken");
   const type = document.getElementById('filterType').value;
@@ -188,27 +200,6 @@ async function chargerListeBons() {
       tbody.appendChild(row);
     });
   } catch (err) {
-    console.error("Erreur chargement liste bons :", err);
+    console.error("Erreur chargement bons :", err);
   }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  const token = localStorage.getItem("adminToken");
-  if (!token) {
-    alert("Accès interdit. Veuillez vous connecter.");
-    window.location.href = "admin-login.html";
-    return;
-  }
-
-  const payload = JSON.parse(atob(token.split('.')[1])); 
-  console.log("[ADMIN] Payload décodé :", payload);
-
-  if (payload.nom) {
-    document.getElementById("nom-admin").textContent = payload.nom;
-  }
-
-  afficherSection("types-bons");
-  chargerTypesBons();
-  chargerTypesPourFiltre();
-  chargerListeBons();
-});
