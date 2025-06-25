@@ -53,7 +53,7 @@ document.getElementById("bonsForm").addEventListener("submit", function (e) {
     const numeroCompte = "00011-55101-12345678900-55";
     const agence = "55101-Kinshasa UPC";
 
-    console.log("USERSSS :", window.userInfos);
+  
     // Génération du bon côté visuel
     const bonHTML = document.createElement("div");
     bonHTML.className = "bon";
@@ -61,7 +61,7 @@ document.getElementById("bonsForm").addEventListener("submit", function (e) {
       <p><strong>Nom:</strong> ${window.userInfos.nom}</p>
       <p><strong>Prénom:</strong> ${window.userInfos.prenom}</p>
       <p><strong>Matricule:</strong> ${window.userInfos.matricule}</p>
-      <p><strong>Promotion:</strong> ${window.userInfos.promotions}</p>
+      <p><strong>Promotion:</strong> ${window.userInfos.promotion}</p>
       <p><strong>Motif:</strong> ${motif}</p>
       <p><strong>Montant:</strong> ${montant} $</p>
       <p><strong>Référence:</strong> ${ref}</p>
@@ -121,15 +121,42 @@ function genererReference() {
 
 // Export PDF 
 function exporterPDF(button) {
-  const bon = button.parentElement.cloneNode(true);
-  bon.querySelector('.export-btn').remove();
+  const bon = button.parentElement;
+
+  const nom = bon.querySelector('p:nth-child(1)').textContent;
+  const prenom = bon.querySelector('p:nth-child(2)').textContent;
+  const matricule = bon.querySelector('p:nth-child(3)').textContent;
+  const promotion = bon.querySelector('p:nth-child(4)').textContent;
+  const motif = bon.querySelector('p:nth-child(5)').textContent;
+  const montant = bon.querySelector('p:nth-child(6)').textContent;
+  const reference = bon.querySelector('p:nth-child(7)').textContent;
+  const banque = bon.querySelector('p:nth-child(8)').textContent;
+  const compte = bon.querySelector('p:nth-child(9)').textContent;
+  const agence = bon.querySelector('p:nth-child(10)').textContent;
+  const qrCanvas = bon.querySelector('.qr-code canvas');
 
   const doc = new window.jspdf.jsPDF();
-  doc.html(bon, {
-    callback: function (pdf) {
-      pdf.save(`bon-${Date.now()}.pdf`);
-    },
-    x: 10,
-    y: 10
-  });
+
+  doc.setFontSize(14);
+  doc.text("Université Protestante au Congo", 20, 20);
+  doc.setFontSize(12);
+  doc.text(nom, 20, 35);
+  doc.text(prenom, 20, 42);
+  doc.text(matricule, 20, 49);
+  doc.text(promotion, 20, 56);
+  doc.text(motif, 20, 63);
+  doc.text(montant, 20, 70);
+  doc.text(reference, 20, 77);
+  doc.text(banque, 20, 84);
+  doc.text(compte, 20, 91);
+  doc.text(agence, 20, 98);
+
+  // Ajout du QR Code s'il existe
+  if (qrCanvas) {
+    const qrDataUrl = qrCanvas.toDataURL();
+    doc.addImage(qrDataUrl, 'PNG', 20, 110, 50, 50);
+  }
+
+  doc.save(`bon-${Date.now()}.pdf`);
 }
+
