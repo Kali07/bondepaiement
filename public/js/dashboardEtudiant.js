@@ -160,3 +160,41 @@ function exporterPDF(button) {
   doc.save(`bon-${Date.now()}.pdf`);
 }
 
+document.getElementById('voirMesBons').addEventListener('click', () => {
+  const token = localStorage.getItem('token');
+
+  fetch('/api/bons', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  .then(res => res.json())
+  .then(bons => {
+    const container = document.getElementById('listeMesBons');
+    container.innerHTML = '';
+
+    if (bons.length === 0) {
+      container.innerHTML = '<p>Aucun bon généré pour l\'instant.</p>';
+    } else {
+      bons.forEach(bon => {
+        container.innerHTML += `
+          <div class="bon">
+            <p><strong>Motif:</strong> ${bon.description}</p>
+            <p><strong>Montant:</strong> ${bon.montant} $</p>
+            <p><strong>Référence:</strong> ${bon.reference}</p>
+            <p><strong>Statut:</strong> ${bon.statut}</p>
+            <hr/>
+          </div>
+        `;
+      });
+    }
+    
+    document.getElementById('mesBonsSection').style.display = 'block';
+  })
+  .catch(err => {
+    console.error('Erreur récupération bons:', err);
+    alert('Impossible de récupérer vos bons');
+  });
+});
+
+

@@ -4,12 +4,14 @@ const router = express.Router();
 const bonsController = require('../controllers/bons.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
-router.get('/', bonsController.getFilteredBons);
+//router.get('/', bonsController.getFilteredBons);
 router.post('/', authMiddleware, bonsController.creerBon);
 
 router.get('/test', (req, res) => {
   res.json({ message: "Test OK" });
 });
+
+router.get('/', authMiddleware, bonsController.getFilteredBons);
 
 
 module.exports = router;
