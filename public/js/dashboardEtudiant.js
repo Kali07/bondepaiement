@@ -15,21 +15,21 @@ if (!token) {
 fetch('/api/etudiants/me', {
   headers: { Authorization: `Bearer ${token}` }
 })
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById("nom").textContent = data.nom;
-    document.getElementById("prenom").textContent = data.prenom;
-    document.getElementById("matricule").textContent = data.matricule;
-    document.getElementById("promotion").textContent = data.promotion;
-    window.userInfos = data;
-  })
-  .catch(() => {
-    alert("Session expirée.");
-    localStorage.removeItem("token");
-    window.location.href = "etudiantlogin.html";
-  });
+.then(res => res.json())
+.then(data => {
+  document.getElementById("nom").textContent = data.nom;
+  document.getElementById("prenom").textContent = data.prenom;
+  document.getElementById("matricule").textContent = data.matricule;
+  document.getElementById("promotion").textContent = data.promotion;
+  window.userInfos = data;
+})
+.catch(() => {
+  alert("Session expirée.");
+  localStorage.removeItem("token");
+  window.location.href = "etudiantlogin.html";
+});
 
-// Génération des bons
+// Génération des bons avec contrôle doublon
 document.getElementById("bonsForm").addEventListener("submit", (e) => {
   e.preventDefault();
   const bonsCoches = [...document.querySelectorAll('input[name="bon"]:checked')];
@@ -49,25 +49,39 @@ document.getElementById("bonsForm").addEventListener("submit", (e) => {
     const numeroCompte = "00011-55101-12345678900-55";
     const agence = "55101-Kinshasa UPC";
 
-    const bonHTML = document.createElement("div");
-    bonHTML.className = "bon";
-    bonHTML.innerHTML = `
-      <p><strong>Nom:</strong> ${window.userInfos.nom}</p>
-      <p><strong>Prénom:</strong> ${window.userInfos.prenom}</p>
-      <p><strong>Matricule:</strong> ${window.userInfos.matricule}</p>
-      <p><strong>Promotion:</strong> ${window.userInfos.promotion}</p>
-      <p><strong>Motif:</strong> ${motif}</p>
-      <p><strong>Montant:</strong> ${montant} $</p>
-      <p><strong>Référence:</strong> ${ref}</p>
-      <p><strong>Banque:</strong> ${banque}</p>
-      <p><strong>N° Compte:</strong> ${numeroCompte}</p>
-      <p><strong>Agence:</strong> ${agence}</p>
-      <canvas id="qr-${ref}"></canvas>
-      <button class="export-btn" onclick="exporterPDF(this)">Exporter en PDF</button>
-    `;
-    container.appendChild(bonHTML);
+    // Vérification doublon avant génération
+    fetch('/api/bons', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => res.json())
+    .then(existingBons => {
+      const dejaExistant = existingBons.some(b => b.description === motif && b.statut !== 'annulé');
 
-    const qrText = `
+      if (dejaExistant) {
+        alert(`Vous avez déjà un bon actif pour : ${motif}`);
+        return;
+      }
+
+      // Génération visuelle
+      const bonHTML = document.createElement("div");
+      bonHTML.className = "bon";
+      bonHTML.innerHTML = `
+        <p><strong>Nom:</strong> ${window.userInfos.nom}</p>
+        <p><strong>Prénom:</strong> ${window.userInfos.prenom}</p>
+        <p><strong>Matricule:</strong> ${window.userInfos.matricule}</p>
+        <p><strong>Promotion:</strong> ${window.userInfos.promotion}</p>
+        <p><strong>Motif:</strong> ${motif}</p>
+        <p><strong>Montant:</strong> ${montant} $</p>
+        <p><strong>Référence:</strong> ${ref}</p>
+        <p><strong>Banque:</strong> ${banque}</p>
+        <p><strong>N° Compte:</strong> ${numeroCompte}</p>
+        <p><strong>Agence:</strong> ${agence}</p>
+        <canvas id="qr-${ref}"></canvas>
+        <button class="export-btn" onclick="exporterPDF(this)">Exporter en PDF</button>
+      `;
+      container.appendChild(bonHTML);
+
+      const qrText = `
 Nom: ${window.userInfos.nom}
 Prénom: ${window.userInfos.prenom}
 Matricule: ${window.userInfos.matricule}
@@ -79,21 +93,23 @@ Compte: ${numeroCompte}
 Agence: ${agence}
 `.trim();
 
-    QRCode.toCanvas(document.getElementById(`qr-${ref}`), qrText, (error) => {
-      if (error) console.error("QR Code error:", error);
-    });
+      QRCode.toCanvas(document.getElementById(`qr-${ref}`), qrText, (error) => {
+        if (error) console.error("QR Code error:", error);
+      });
 
-    fetch('/api/bons', {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ motif, montant, reference: ref })
-    })
-    .then(res => res.json())
-    .then(rep => console.log(rep))
-    .catch(err => console.error("Erreur création du bon :", err));
+      // Enregistrement en BDD
+      fetch('/api/bons', {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ motif, montant, reference: ref })
+      })
+      .then(res => res.json())
+      .then(rep => console.log(rep))
+      .catch(err => console.error("Erreur création du bon :", err));
+    });
   });
 });
 
