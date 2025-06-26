@@ -13,6 +13,7 @@ router.get('/', authMiddleware, bonsController.getFilteredBons);
 router.get('/admin', authAdminMiddleware, bonsController.getAllBonsAdmin);
 router.put('/admin/:id/statut', authAdminMiddleware, bonsController.updateStatutBonAdmin);
 router.delete('/admin/:id', authAdminMiddleware, bonsController.deleteBonAdmin);
+router.get('/admin-stats', authAdminMiddleware, bonsController.getStatsBons);
 
 
 

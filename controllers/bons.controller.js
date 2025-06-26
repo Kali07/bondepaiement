@@ -152,12 +152,32 @@ const deleteBonAdmin = async (req, res) => {
   }
 };
 
+const getStatsBons = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        COUNT(*) AS total,
+        SUM(CASE WHEN statut = 'validé' THEN 1 ELSE 0 END) AS valides,
+        SUM(CASE WHEN statut = 'en attente' THEN 1 ELSE 0 END) AS en_attente,
+        SUM(CASE WHEN statut = 'annulé' THEN 1 ELSE 0 END) AS annules,
+        SUM(montant) AS montant_total
+      FROM bons_paiement
+    `);
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error("Erreur stats :", err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
 module.exports = {
   getFilteredBons,
   creerBon,
   getAllBonsAdmin,
   updateStatutBonAdmin,
-  deleteBonAdmin
+  deleteBonAdmin,
+  getStatsBons
 };
 
 

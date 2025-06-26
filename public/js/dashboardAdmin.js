@@ -38,6 +38,10 @@ function afficherSection(sectionId) {
   });
   const activeSection = document.getElementById(sectionId);
   if (activeSection) activeSection.style.display = "block";
+
+    if (sectionId === "stats-bons") {
+    chargerStats();
+  }
 }
 
 // Ajout type de bon
@@ -237,3 +241,19 @@ async function supprimerBon(id) {
   chargerListeBons();
 }
 
+function chargerStats() {
+  const token = localStorage.getItem("adminToken");
+
+  fetch('/api/bons/admin-stats', {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  .then(res => res.json())
+  .then(stats => {
+    document.getElementById("statTotal").textContent = stats.total;
+    document.getElementById("statValides").textContent = stats.valides;
+    document.getElementById("statAttente").textContent = stats.en_attente;
+    document.getElementById("statAnnules").textContent = stats.annules;
+    document.getElementById("statMontant").textContent = stats.montant_total + " $";
+  })
+  .catch(err => console.error("Erreur chargement stats :", err));
+}
