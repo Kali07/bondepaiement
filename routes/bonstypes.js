@@ -8,4 +8,6 @@ router.post('/', authMiddleware, bonsTypesController.create);
 router.put('/:id', authMiddleware, bonsTypesController.update);
 router.delete('/:id', authMiddleware, bonsTypesController.delete);
 
+router.get('/montant', authMiddleware, bonsTypesController.getMontantParMotif);
+
 module.exports = router;

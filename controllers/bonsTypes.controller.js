@@ -48,3 +48,19 @@ exports.delete = async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur' });
   }
 };
+
+exports.getMontantParMotif = async (req, res) => {
+  const motif = req.query.motif;
+
+  try {
+    const [rows] = await db.query('SELECT montant FROM bons_types WHERE nom = ?', [motif]);
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Type de bon introuvable" });
+    }
+
+    res.json({ montant: rows[0].montant });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};

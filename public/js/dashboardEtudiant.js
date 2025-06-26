@@ -15,22 +15,22 @@ if (!token) {
 fetch('/api/etudiants/me', {
   headers: { Authorization: `Bearer ${token}` }
 })
-.then(res => res.json())
-.then(data => {
-  document.getElementById("nom").textContent = data.nom;
-  document.getElementById("prenom").textContent = data.prenom;
-  document.getElementById("matricule").textContent = data.matricule;
-  document.getElementById("promotion").textContent = data.promotion;
-  window.userInfos = data;
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("nom").textContent = data.nom;
+    document.getElementById("prenom").textContent = data.prenom;
+    document.getElementById("matricule").textContent = data.matricule;
+    document.getElementById("promotion").textContent = data.promotion;
+    window.userInfos = data;
 
-  // Charger dynamiquement les bons depuis la BDD après infos récupérées
-  chargerBonsDisponibles();
-})
-.catch(() => {
-  alert("Session expirée.");
-  localStorage.removeItem("token");
-  window.location.href = "etudiantlogin.html";
-});
+    // Charger dynamiquement les bons depuis la BDD après infos récupérées
+    chargerBonsDisponibles();
+  })
+  .catch(() => {
+    alert("Session expirée.");
+    localStorage.removeItem("token");
+    window.location.href = "etudiantlogin.html";
+  });
 
 
 function chargerBonsDisponibles() {
@@ -55,7 +55,6 @@ function chargerBonsDisponibles() {
     });
 }
 
-
 // Génération des bons avec contrôle doublon
 document.getElementById("bonsForm").addEventListener("submit", (e) => {
   e.preventDefault();
@@ -65,50 +64,52 @@ document.getElementById("bonsForm").addEventListener("submit", (e) => {
 
   bonsCoches.forEach(bon => {
     const motif = bon.value;
-    const montant = {
-      "Frais académiques": 925,
-      "Frais CISNET": 20,
-      "Attestations de fréquentation": 10
-    }[motif];
-
     const ref = genererReference();
     const banque = "Rawbank UPC";
     const numeroCompte = "00011-55101-12345678900-55";
     const agence = "55101-Kinshasa UPC";
 
-    // Vérification doublon avant génération
-    fetch('/api/bons', {
+    // Récupération du montant depuis le backend
+    fetch(`/api/bons-types/montant?motif=${encodeURIComponent(motif)}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-    .then(res => res.json())
-    .then(existingBons => {
-      const dejaExistant = existingBons.some(b => b.description === motif && b.statut !== 'annulé');
+      .then(res => res.json())
+      .then(data => {
+        const montant = data.montant;
 
-      if (dejaExistant) {
-        alert(`Vous avez déjà un bon actif pour : ${motif}`);
-        return;
-      }
+        // Vérification doublon avant génération
+        fetch('/api/bons', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then(res => res.json())
+          .then(existingBons => {
+            const dejaExistant = existingBons.some(b => b.description === motif && b.statut !== 'annulé');
 
-      // Génération visuelle
-      const bonHTML = document.createElement("div");
-      bonHTML.className = "bon";
-      bonHTML.innerHTML = `
-        <p><strong>Nom:</strong> ${window.userInfos.nom}</p>
-        <p><strong>Prénom:</strong> ${window.userInfos.prenom}</p>
-        <p><strong>Matricule:</strong> ${window.userInfos.matricule}</p>
-        <p><strong>Promotion:</strong> ${window.userInfos.promotion}</p>
-        <p><strong>Motif:</strong> ${motif}</p>
-        <p><strong>Montant:</strong> ${montant} $</p>
-        <p><strong>Référence:</strong> ${ref}</p>
-        <p><strong>Banque:</strong> ${banque}</p>
-        <p><strong>N° Compte:</strong> ${numeroCompte}</p>
-        <p><strong>Agence:</strong> ${agence}</p>
-        <canvas id="qr-${ref}"></canvas>
-        <button class="export-btn" onclick="exporterPDF(this)">Exporter en PDF</button>
-      `;
-      container.appendChild(bonHTML);
+            if (dejaExistant) {
+              alert(`Vous avez déjà un bon actif pour : ${motif}`);
+              return;
+            }
 
-      const qrText = `
+            // Génération visuelle
+            const bonHTML = document.createElement("div");
+            bonHTML.className = "bon";
+            bonHTML.innerHTML = `
+              <p><strong>Nom:</strong> ${window.userInfos.nom}</p>
+              <p><strong>Prénom:</strong> ${window.userInfos.prenom}</p>
+              <p><strong>Matricule:</strong> ${window.userInfos.matricule}</p>
+              <p><strong>Promotion:</strong> ${window.userInfos.promotion}</p>
+              <p><strong>Motif:</strong> ${motif}</p>
+              <p><strong>Montant:</strong> ${montant} $</p>
+              <p><strong>Référence:</strong> ${ref}</p>
+              <p><strong>Banque:</strong> ${banque}</p>
+              <p><strong>N° Compte:</strong> ${numeroCompte}</p>
+              <p><strong>Agence:</strong> ${agence}</p>
+              <canvas id="qr-${ref}"></canvas>
+              <button class="export-btn" onclick="exporterPDF(this)">Exporter en PDF</button>
+            `;
+            container.appendChild(bonHTML);
+
+            const qrText = `
 Nom: ${window.userInfos.nom}
 Prénom: ${window.userInfos.prenom}
 Matricule: ${window.userInfos.matricule}
@@ -120,23 +121,25 @@ Compte: ${numeroCompte}
 Agence: ${agence}
 `.trim();
 
-      QRCode.toCanvas(document.getElementById(`qr-${ref}`), qrText, (error) => {
-        if (error) console.error("QR Code error:", error);
-      });
+            QRCode.toCanvas(document.getElementById(`qr-${ref}`), qrText, (error) => {
+              if (error) console.error("QR Code error:", error);
+            });
 
-      // Enregistrement en BDD
-      fetch('/api/bons', {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ motif, montant, reference: ref })
+            // Enregistrement en BDD
+            fetch('/api/bons', {
+              method: 'POST',
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+              },
+              body: JSON.stringify({ motif, reference: ref })
+            })
+              .then(res => res.json())
+              .then(rep => console.log(rep))
+              .catch(err => console.error("Erreur création du bon :", err));
+          });
       })
-      .then(res => res.json())
-      .then(rep => console.log(rep))
-      .catch(err => console.error("Erreur création du bon :", err));
-    });
+      .catch(err => console.error("Erreur récupération montant :", err));
   });
 });
 
@@ -180,30 +183,30 @@ document.getElementById('voirMesBons').addEventListener('click', () => {
   fetch('/api/bons', {
     headers: { Authorization: `Bearer ${token}` }
   })
-  .then(res => res.json())
-  .then(bons => {
-    const container = document.getElementById('listeMesBons');
-    container.innerHTML = '';
+    .then(res => res.json())
+    .then(bons => {
+      const container = document.getElementById('listeMesBons');
+      container.innerHTML = '';
 
-    if (bons.length === 0) {
-      container.innerHTML = '<p>Aucun bon généré.</p>';
-      return;
-    }
+      if (bons.length === 0) {
+        container.innerHTML = '<p>Aucun bon généré.</p>';
+        return;
+      }
 
-    bons.forEach(bon => {
-      const bloc = document.createElement("div");
-      bloc.className = "bon";
-      bloc.innerHTML = `
-        <p><strong>Motif:</strong> ${bon.description}</p>
-        <p><strong>Montant:</strong> ${bon.montant} $</p>
-        <p><strong>Référence:</strong> ${bon.reference}</p>
-        <p><strong>Statut:</strong> ${bon.statut}</p>
-        <canvas id="qr-${bon.reference}"></canvas>
-        <button class="export-btn" onclick="exporterPDF(this)">Exporter en PDF</button>
-      `;
-      container.appendChild(bloc);
+      bons.forEach(bon => {
+        const bloc = document.createElement("div");
+        bloc.className = "bon";
+        bloc.innerHTML = `
+          <p><strong>Motif:</strong> ${bon.description}</p>
+          <p><strong>Montant:</strong> ${bon.montant} $</p>
+          <p><strong>Référence:</strong> ${bon.reference}</p>
+          <p><strong>Statut:</strong> ${bon.statut}</p>
+          <canvas id="qr-${bon.reference}"></canvas>
+          <button class="export-btn" onclick="exporterPDF(this)">Exporter en PDF</button>
+        `;
+        container.appendChild(bloc);
 
-      const qrText = `
+        const qrText = `
 Nom: ${window.userInfos.nom}
 Prénom: ${window.userInfos.prenom}
 Matricule: ${window.userInfos.matricule}
@@ -215,12 +218,12 @@ Compte: 00011-55101-12345678900-55
 Agence: 55101-Kinshasa UPC
 `.trim();
 
-      QRCode.toCanvas(document.getElementById(`qr-${bon.reference}`), qrText, (error) => {
-        if (error) console.error("QR Code error:", error);
+        QRCode.toCanvas(document.getElementById(`qr-${bon.reference}`), qrText, (error) => {
+          if (error) console.error("QR Code error:", error);
+        });
       });
-    });
 
-    document.getElementById('mesBonsSection').style.display = 'block';
-  })
-  .catch(() => alert("Impossible de récupérer vos bons"));
+      document.getElementById('mesBonsSection').style.display = 'block';
+    })
+    .catch(() => alert("Impossible de récupérer vos bons"));
 });

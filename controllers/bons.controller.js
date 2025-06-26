@@ -70,20 +70,19 @@ const getAllBonsAdmin = async (req, res) => {
 // ============================
 
 const creerBon = async (req, res) => {
-  const { motif, montant, reference } = req.body;
+  const { motif, reference } = req.body;
   const userId = req.user.id;
 
   try {
-    // Récupérer l'id du type de bon à partir du motif
-    const [types] = await db.query('SELECT id FROM bons_types WHERE nom = ?', [motif]);
+    const [types] = await db.query('SELECT id, montant FROM bons_types WHERE nom = ?', [motif]);
 
     if (types.length === 0) {
       return res.status(400).json({ message: "Type de bon invalide" });
     }
 
     const type_id = types[0].id;
+    const montant = types[0].montant;
 
-    // Génération du contenu QR (même contenu que côté front)
     const qrText = `
 Nom: ${req.user.nom}
 Prénom: ${req.user.prenom}
@@ -96,7 +95,6 @@ Compte: 00011-55101-12345678900-55
 Agence: 55101-Kinshasa UPC
     `.trim();
 
-    // Insertion avec le champ code_qr
     await db.query(`
       INSERT INTO bons_paiement 
       (user_id, type_id, montant, description, reference, statut, nom_etudiant, prenom_etudiant, matricule_etudiant, promotion_etudiant, code_qr)
