@@ -9,10 +9,11 @@ const getFilteredBons = async (req, res) => {
 
   try {
     const [rows] = await db.query(`
-      SELECT id, description, montant, reference, statut, date_creation
-      FROM bons_paiement
-      WHERE user_id = ?
-      ORDER BY date_creation DESC
+      SELECT b.id, t.nom AS description, b.montant, b.reference, b.statut, b.date_creation
+      FROM bons_paiement b
+      JOIN bons_types t ON b.type_id = t.id
+      WHERE b.user_id = ?
+      ORDER BY b.date_creation DESC
     `, [userId]);
 
     res.json(rows);
