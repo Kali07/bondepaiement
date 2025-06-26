@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   try {
-    const payload = JSON.parse(atob(token.split('.')[1])); 
+    const payload = JSON.parse(atob(token.split('.')[1]));
     if (payload.nom) {
       document.getElementById("nom-admin").textContent = payload.nom;
     }
@@ -181,7 +181,7 @@ async function chargerListeBons() {
   if (dateDebut) params.append("dateDebut", dateDebut);
 
   try {
-    const res = await fetch(`/api/bons?${params.toString()}`, {
+    const res = await fetch(`/api/bons/admin?${params.toString()}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     const bons = await res.json();
@@ -191,11 +191,13 @@ async function chargerListeBons() {
     bons.forEach(bon => {
       const row = document.createElement('tr');
       row.innerHTML = `
+        <td>${bon.reference}</td>
         <td>${bon.type_bon}</td>
         <td>${bon.description}</td>
         <td>${bon.montant} $</td>
         <td>${bon.statut}</td>
         <td>${bon.date_creation}</td>
+        <td>${bon.nom_etudiant} ${bon.prenom_etudiant} (${bon.matricule_etudiant})</td>
       `;
       tbody.appendChild(row);
     });

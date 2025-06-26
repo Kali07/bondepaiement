@@ -23,6 +23,43 @@ const getFilteredBons = async (req, res) => {
   }
 };
 
+const getAllBonsAdmin = async (req, res) => {
+  const { type_id, statut, dateDebut } = req.query;
+  const params = [];
+  let where = "WHERE 1=1";  
+
+  if (type_id) {
+    where += " AND b.type_id = ?";
+    params.push(type_id);
+  }
+  if (statut) {
+    where += " AND b.statut = ?";
+    params.push(statut);
+  }
+  if (dateDebut) {
+    where += " AND DATE(b.date_creation) = ?";
+    params.push(dateDebut);
+  }
+
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        b.id, t.nom AS type_bon, b.description, b.montant, b.reference, 
+        b.statut, b.date_creation,
+        b.nom_etudiant, b.prenom_etudiant, b.matricule_etudiant, b.promotion_etudiant
+      FROM bons_paiement b
+      JOIN bons_types t ON b.type_id = t.id
+      ${where}
+      ORDER BY b.date_creation DESC
+    `, params);
+
+    res.json(rows);
+  } catch (error) {
+    console.error("Erreur récupération bons admin :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
 
 // ============================
 // POST : Création d'un bon par un étudiant
@@ -82,7 +119,8 @@ Agence: 55101-Kinshasa UPC
 
 module.exports = {
   getFilteredBons,
-  creerBon
+  creerBon,
+  getAllBonsAdmin
 };
 
 // ============================
