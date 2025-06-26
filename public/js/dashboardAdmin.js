@@ -179,7 +179,8 @@ async function chargerListeBons() {
   if (type) params.append("type_id", type);
   if (statut) params.append("statut", statut);
   if (dateDebut) params.append("dateDebut", dateDebut);
-
+  
+console.log(params.toString());
   try {
     const res = await fetch(`/api/bons/admin?${params.toString()}`, {
       headers: { Authorization: `Bearer ${token}` }
