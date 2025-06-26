@@ -179,7 +179,7 @@ async function chargerListeBons() {
   if (type) params.append("type_id", type);
   if (statut) params.append("statut", statut);
   if (dateDebut) params.append("dateDebut", dateDebut);
-  
+
 console.log(params.toString());
   try {
     const res = await fetch(`/api/bons/admin?${params.toString()}`, {
@@ -189,20 +189,51 @@ console.log(params.toString());
     const tbody = document.querySelector('#bonsTable tbody');
     tbody.innerHTML = '';
 
-    bons.forEach(bon => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${bon.reference}</td>
-        <td>${bon.type_bon}</td>
-        <td>${bon.description}</td>
-        <td>${bon.montant} $</td>
-        <td>${bon.statut}</td>
-        <td>${bon.date_creation}</td>
-        <td>${bon.nom_etudiant} ${bon.prenom_etudiant} (${bon.matricule_etudiant})</td>
-      `;
-      tbody.appendChild(row);
-    });
+bons.forEach(bon => {
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td>${bon.reference}</td>
+    <td>${bon.type_bon}</td>
+    <td>${bon.description}</td>
+    <td>${bon.montant} $</td>
+    <td>${bon.statut}</td>
+    <td>${bon.date_creation}</td>
+    <td>${bon.nom_etudiant} ${bon.prenom_etudiant} (${bon.matricule_etudiant})</td>
+    <td>
+      <button class="btn btn-sm btn-success" onclick="changerStatut('${bon.id}', '${bon.statut}')">Modifier Statut</button>
+      <button class="btn btn-sm btn-danger" onclick="supprimerBon('${bon.id}')">Supprimer</button>
+    </td>
+  `;
+  tbody.appendChild(row);
+});
   } catch (err) {
     console.error("Erreur chargement bons :", err);
   }
 }
+
+// Bouton Modifier Statut
+async function changerStatut(id, actuel) {
+  const nouveau = prompt("Nouveau statut (en attente / validé / annulé) :", actuel);
+  if (!nouveau || !["en attente", "validé", "annulé"].includes(nouveau)) return alert("Statut invalide");
+
+  const token = localStorage.getItem("adminToken");
+  await fetch(`/api/bons/admin/${id}/statut`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ statut: nouveau })
+  });
+  chargerListeBons();
+}
+
+// Bouton Supprimer Bon
+async function supprimerBon(id) {
+  if (!confirm("Voulez-vous vraiment supprimer ce bon ?")) return;
+
+  const token = localStorage.getItem("adminToken");
+  await fetch(`/api/bons/admin/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  chargerListeBons();
+}
+

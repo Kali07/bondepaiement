@@ -11,6 +11,9 @@ const authAdminMiddleware = require('../middlewares/authAdmin.middleware');
 router.post('/', authMiddleware, bonsController.creerBon);
 router.get('/', authMiddleware, bonsController.getFilteredBons);
 router.get('/admin', authAdminMiddleware, bonsController.getAllBonsAdmin);
+router.put('/admin/:id/statut', authAdminMiddleware, bonsController.updateStatutBonAdmin);
+router.delete('/admin/:id', authAdminMiddleware, bonsController.deleteBonAdmin);
+
 
 
 module.exports = router;

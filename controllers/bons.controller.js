@@ -61,6 +61,10 @@ const getAllBonsAdmin = async (req, res) => {
 };
 
 
+
+
+
+
 // ============================
 // POST : Création d'un bon par un étudiant
 // ============================
@@ -117,11 +121,45 @@ Agence: 55101-Kinshasa UPC
   }
 };
 
+// Modification du statut par l'admin
+const updateStatutBonAdmin = async (req, res) => {
+  const { id } = req.params;
+  const { statut } = req.body;
+
+  if (!["en attente", "validé", "annulé"].includes(statut)) {
+    return res.status(400).json({ message: "Statut invalide" });
+  }
+
+  try {
+    await db.query(`UPDATE bons_paiement SET statut = ? WHERE id = ?`, [statut, id]);
+    res.json({ message: "Statut mis à jour" });
+  } catch (error) {
+    console.error("Erreur update statut :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+// Suppression d'un bon par l'admin
+const deleteBonAdmin = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await db.query(`DELETE FROM bons_paiement WHERE id = ?`, [id]);
+    res.json({ message: "Bon supprimé" });
+  } catch (error) {
+    console.error("Erreur suppression bon :", error);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
 module.exports = {
   getFilteredBons,
   creerBon,
-  getAllBonsAdmin
+  getAllBonsAdmin,
+  updateStatutBonAdmin,
+  deleteBonAdmin
 };
+
 
 // ============================
 // CRUD : ADMIN
