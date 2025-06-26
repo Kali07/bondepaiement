@@ -22,12 +22,39 @@ fetch('/api/etudiants/me', {
   document.getElementById("matricule").textContent = data.matricule;
   document.getElementById("promotion").textContent = data.promotion;
   window.userInfos = data;
+
+  // Charger dynamiquement les bons depuis la BDD après infos récupérées
+  chargerBonsDisponibles();
 })
 .catch(() => {
   alert("Session expirée.");
   localStorage.removeItem("token");
   window.location.href = "etudiantlogin.html";
 });
+
+
+function chargerBonsDisponibles() {
+  fetch('/api/bons-types', {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json())
+    .then(types => {
+      const container = document.getElementById("bonsCheckBoxes");
+      container.innerHTML = "";
+
+      types.forEach(type => {
+        const label = document.createElement("label");
+        label.innerHTML = `
+          <input type="checkbox" name="bon" value="${type.nom}"> ${type.nom}
+        `;
+        container.appendChild(label);
+      });
+    })
+    .catch(err => {
+      console.error("Erreur chargement types de bons :", err);
+    });
+}
+
 
 // Génération des bons avec contrôle doublon
 document.getElementById("bonsForm").addEventListener("submit", (e) => {

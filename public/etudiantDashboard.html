@@ -20,15 +20,14 @@
     <p><strong>Matricule :</strong> <span id="matricule"></span></p>
     <p><strong>Promotion :</strong> <span id="promotion"></span></p>
   </section>
-  <button id ="logoutBtn">Se déconnecter</button>
+  
+  <button id="logoutBtn">Se déconnecter</button>
   <button id="voirMesBons">Voir mes bons générés</button>
 
   <section class="bons-section">
     <h3>Choisissez les bons à générer</h3>
     <form id="bonsForm">
-      <label><input type="checkbox" name="bon" value="Frais académiques"> Frais académiques – 925$</label>
-      <label><input type="checkbox" name="bon" value="Frais CISNET"> Frais CISNET – 20$</label>
-      <label><input type="checkbox" name="bon" value="Attestations de fréquentation"> Attestations de fréquentation – 10$</label>
+      <div id="bonsCheckBoxes"></div>
       <button type="submit">Générer les bons</button>
     </form>
   </section>
@@ -39,9 +38,9 @@
   </section>
 
   <section id="mesBonsSection" style="display: none;">
-  <h3>Mes bons générés</h3>
-  <div id="listeMesBons"></div>
-</section>
+    <h3>Mes bons générés</h3>
+    <div id="listeMesBons"></div>
+  </section>
 
   <script src="js/dashboardEtudiant.js"></script>
 </body>
