@@ -12,11 +12,13 @@ exports.getAll = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const { nom } = req.body;
-  if (!nom) return res.status(400).json({ message: 'Nom requis' });
+  const { nom, montant } = req.body;
+
+  if (!nom || nom.length < 3) return res.status(400).json({ message: 'Nom requis' });
+  if (isNaN(montant) || montant <= 0) return res.status(400).json({ message: 'Montant invalide' });
 
   try {
-    await db.query('INSERT INTO bons_types (nom) VALUES (?)', [nom]);
+    await db.query('INSERT INTO bons_types (nom, montant) VALUES (?, ?)', [nom, montant]);
     res.json({ message: 'Type de bon ajouté' });
   } catch (err) {
     console.error(err);
@@ -26,11 +28,13 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   const { id } = req.params;
-  const { nom } = req.body;
-  if (!nom) return res.status(400).json({ message: 'Nom requis' });
+  const { nom, montant } = req.body;
+
+  if (!nom || nom.length < 3) return res.status(400).json({ message: 'Nom requis' });
+  if (isNaN(montant) || montant <= 0) return res.status(400).json({ message: 'Montant invalide' });
 
   try {
-    await db.query('UPDATE bons_types SET nom = ? WHERE id = ?', [nom, id]);
+    await db.query('UPDATE bons_types SET nom = ?, montant = ? WHERE id = ?', [nom, montant, id]);
     res.json({ message: 'Type modifié' });
   } catch (err) {
     console.error(err);
