@@ -262,6 +262,8 @@ async function supprimerBon(id) {
 }
 
 // Chargement des statistiques
+let statsChart = null;
+
 function chargerStats() {
   const token = localStorage.getItem("adminToken");
 
@@ -275,6 +277,33 @@ function chargerStats() {
     document.getElementById("statAttente").textContent = stats.en_attente;
     document.getElementById("statAnnules").textContent = stats.annules;
     document.getElementById("statMontant").textContent = stats.montant_total + " $";
+
+    const ctx = document.getElementById('chartStats').getContext('2d');
+
+    // Si le graphique existe déjà, le détruire avant de le recréer
+    if (statsChart) {
+      statsChart.destroy();
+    }
+
+    statsChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Validés', 'En attente', 'Annulés'],
+        datasets: [{
+          data: [stats.valides, stats.en_attente, stats.annules],
+          backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
   })
   .catch(err => console.error("Erreur chargement stats :", err));
 }
+
